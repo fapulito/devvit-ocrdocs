@@ -3,10 +3,11 @@ import { navigateTo } from '@devvit/web/client';
 import { useCounter } from './hooks/useCounter';
 import { DocumentUploader } from './components/DocumentUploader';
 import { DocumentsList } from './components/DocumentsList';
+import { ApiKeyConfig } from './components/ApiKeyConfig';
 
 export const App = () => {
   const { username } = useCounter();
-  const [activeTab, setActiveTab] = useState<'upload' | 'documents'>('upload');
+  const [activeTab, setActiveTab] = useState<'upload' | 'documents' | 'config'>('config');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleDocumentAdded = () => {
@@ -35,6 +36,16 @@ export const App = () => {
       <nav className="bg-gray-900/30 backdrop-blur-sm border-b border-gray-700/50">
         <div className="max-w-4xl mx-auto flex">
           <button
+            onClick={() => setActiveTab('config')}
+            className={`px-6 py-3 font-medium text-sm border-b-2 transition-all ${
+              activeTab === 'config'
+                ? 'border-blue-500 text-blue-400'
+                : 'border-transparent text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            Setup
+          </button>
+          <button
             onClick={() => setActiveTab('upload')}
             className={`px-6 py-3 font-medium text-sm border-b-2 transition-all ${
               activeTab === 'upload'
@@ -58,7 +69,9 @@ export const App = () => {
       </nav>
 
       <main className="flex-1 py-8">
-        {activeTab === 'upload' ? (
+        {activeTab === 'config' ? (
+          <ApiKeyConfig />
+        ) : activeTab === 'upload' ? (
           <DocumentUploader onDocumentAdded={handleDocumentAdded} />
         ) : (
           <DocumentsList refreshTrigger={refreshTrigger} />

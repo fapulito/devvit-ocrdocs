@@ -8,7 +8,7 @@
 
 A personal document management application that lets you upload, organize, and manage your important documents directly within Reddit posts, powered by Google Gemini AI for automatic document analysis.
 
-> **Note:** This is a productivity tool for document management, not a game. It provides a practical solution for organizing and storing personal documents on Reddit.
+> **Note:** This is a productivity tool for document management. It provides a practical solution for organizing and storing personal documents on Reddit with AI-powered analysis.
 
 ## 🚀 Quick Start
 
@@ -36,19 +36,22 @@ npm run deploy
 
 Document Manager is a full-featured document organization app that runs inside Reddit posts. Upload images and PDFs of receipts, invoices, notes, forms, contracts, or any important documents, add descriptions and notes, and access them anytime from the same Reddit post. Each document is stored with metadata and a preview (for images), making it easy to find what you need at a glance.
 
-The app launches directly into a clean two-tab interface with a modern dark gradient theme:
+The app launches directly into a clean three-tab interface with a modern dark gradient theme:
+- **Setup**: Configure your Google Gemini API key for AI-powered document analysis (one-time setup per post)
 - **Upload Document**: Upload images or PDFs (both with 500KB limit), with optional AI analysis, add descriptions, and optional notes
 - **My Documents**: Browse all your uploaded documents in a visual grid with previews, descriptions, and timestamps
 
-The app features **AI-powered document analysis** using Google's Gemini API to automatically extract key information from your documents:
-- **Smart Description Generation**: AI analyzes your document and suggests a concise description
-- **Automatic Summarization**: Extracts key details like amounts, dates, and important information
+The app features **AI-powered document analysis** using Google's Gemini 2.5 Flash API to automatically extract key information from your documents:
+- **Easy Setup**: Configure your Gemini API key once through the Setup tab - stored securely in Redis
+- **Smart Description Generation**: AI analyzes your document and suggests a concise description (max 80 characters)
+- **Automatic Summarization**: Extracts key details like amounts, dates, and important information (max 400 characters)
 - **Intelligent Text Recognition**: Works with both images and PDFs to understand document content
 - **Auto-Analyze Toggle**: Enable or disable automatic AI analysis when uploading documents
 - **Re-Analyze Button**: Regenerate AI analysis if you're not satisfied with the initial results
 - **Manual Override**: Edit AI-generated descriptions and summaries before saving
 - **Safe Submission**: Prevents accidental form submission while AI analysis is in progress
-- **One-Time Setup**: API key automatically configured from environment variables on first app load
+- **Intelligent Caching**: Analysis results cached for 7 days with MD5 hash-based cache keys
+- **Rate Limiting**: Fair usage with 100 analysis requests per user per day
 
 ### What Makes It Innovative
 
@@ -104,11 +107,28 @@ The app features **AI-powered document analysis** using Google's Gemini API to a
    - Click the "Launch App" button to open the full-screen interface
    - You'll see the main interface with a modern dark gradient background:
      - **Header**: Dark glassmorphic header with a blue-purple gradient document icon, "Document Manager" title, and your username displayed on the right (e.g., "Hello, username!")
-     - **Navigation tabs**: "Upload Document" and "My Documents" tabs with blue highlight indicator for the active tab
-     - **Footer**: Dark footer with links to Devvit Docs, r/Devvit, and Discord community
+     - **Navigation tabs**: "Setup", "Upload Document", and "My Documents" tabs with blue highlight indicator for the active tab
+     - **Footer**: Dark footer with clickable links to Devvit Docs, r/Devvit, and Discord community
+   - The app opens to the **Setup** tab by default for first-time configuration
 
-**2. Upload a Document (Upload Document Tab)**
-   - The "Upload Document" tab is selected by default when you open the app
+**2. Configure API Key (Setup Tab - First Time Only)**
+   - On first launch, you'll see the **Setup** tab with a dark glassmorphic card
+   - The card displays:
+     - **Heading**: "Configure Gemini API Key"
+     - **Description**: Instructions with a clickable link to Google AI Studio
+     - **Password input field**: For entering your API key (masked for security)
+     - **Configure button**: Blue button that shows "Configuring..." while processing
+   - Get your free Gemini API key at https://aistudio.google.com/app/apikey
+   - Enter the API key in the password field
+   - Click "Configure API Key" to store it securely in Redis
+   - **Success feedback**: Green success message appears: "API key configured successfully! AI analysis is now enabled."
+   - **Additional info**: Blue info box confirms the key is stored and ready to use
+   - The key is stored per-post in Redis and persists across sessions
+   - You only need to do this once per Reddit post
+   - After setup, switch to the "Upload Document" tab to start uploading
+
+**3. Upload a Document (Upload Document Tab)**
+   - Click the "Upload Document" tab in the navigation
    - You'll see a dark glassmorphic card with "Document Upload" heading and a subtitle: "Select an image or PDF file to upload and manage."
    - **Mobile users**: A yellow warning banner appears on mobile devices stating "⚠️ File uploads may not work on mobile due to Reddit app restrictions. Please use desktop for uploading."
    - **Tap the dashed border area** labeled "Tap to select a file" to open your device's file picker
@@ -124,13 +144,13 @@ The app features **AI-powered document analysis** using Google's Gemini API to a
    - **PDF handling**: PDFs are stored in Redis as base64 data, same as images
    - **Supported content**: Receipts, invoices, forms, notes, contracts, business cards, certificates, reports, manuals, etc.
 
-**3. Configure AI Analysis (Optional)**
+**4. Configure AI Analysis (Optional)**
    - At the top of the upload form, you'll see an **"Auto-analyze with AI"** checkbox
    - **Enabled by default**: AI will automatically analyze your document when you select a file
    - **Toggle off**: If you prefer to add descriptions manually, uncheck this option
    - The setting persists during your session for convenience
 
-**4. Add Document Details**
+**5. Add Document Details**
    - After selecting a file, you'll see:
      - **For images**: A thumbnail preview of your uploaded image with rounded corners in a dark gray container
      - **For PDFs**: A PDF icon with "PDF Document" label (no preview available)
@@ -151,7 +171,7 @@ The app features **AI-powered document analysis** using Google's Gemini API to a
    - Click **"Cancel"** to clear the form and start over
    - After successful save, you're automatically redirected to the "My Documents" tab to see your new upload
 
-**5. View Your Documents (My Documents Tab)**
+**6. View Your Documents (My Documents Tab)**
    - Click the **"My Documents"** tab in the navigation bar (tab highlights in blue when active)
    - View all your uploaded documents in a **grid layout** (2 columns on desktop, 1 on mobile)
    - If no documents exist, you'll see:
@@ -171,7 +191,7 @@ The app features **AI-powered document analysis** using Google's Gemini API to a
    - **Copy All button**: Top-right button to copy all document metadata to clipboard
    - Cards have a hover effect (border changes to blue) and cursor changes to pointer to indicate they're clickable
 
-**6. View Document Details**
+**7. View Document Details**
    - **For images**: Click any image card to open the **detail view**
    - **For PDFs**: Click any PDF card to view in the detail view (same as images)
    - The detail view shows on a dark glassmorphic card with shadow:
@@ -186,7 +206,7 @@ The app features **AI-powered document analysis** using Google's Gemini API to a
      - **Delete button**: Red "Delete Document" button centered at the bottom to remove the document
    - Click **"← Back to list"** at the top to return to the grid view
 
-**7. Save a Document**
+**8. Save a Document**
    - **For images**: Open the document detail view
      - You'll see a blue info box with instructions: "💡 To save this image: Right-click the image above and select 'Save image as...' or 'Open image in new tab'"
      - **Right-click method**: Right-click the full-size image and select "Save image as..." from the context menu
@@ -196,7 +216,7 @@ The app features **AI-powered document analysis** using Google's Gemini API to a
      - Right-click the PDF icon and select "Save image as..." to save the preview
      - For full PDF access, you'll need to download the original file before uploading
 
-**8. Copy All Documents**
+**9. Copy All Documents**
    - In the "My Documents" tab, click the **"Copy All"** button in the top-right corner
    - All document metadata is copied to your clipboard:
      - Export date and total document count
@@ -205,7 +225,7 @@ The app features **AI-powered document analysis** using Google's Gemini API to a
    - Useful for backup or sharing document information without the images
    - **Note**: If clipboard access fails, an alert will show the first 500 characters of the export data for manual copying
 
-**9. Delete a Document**
+**10. Delete a Document**
    - Open the document detail view (for both images and PDFs) and click the red **"Delete Document"** button
    - A modal dialog appears with a dark overlay asking "Delete Document?"
    - The dialog shows: "Are you sure you want to delete this document? This action cannot be undone."
@@ -215,7 +235,7 @@ The app features **AI-powered document analysis** using Google's Gemini API to a
    - If you were viewing the deleted document, you're automatically returned to the document list
    - The document disappears from the grid immediately after successful deletion
 
-**10. Upload More Documents**
+**11. Upload More Documents**
    - Switch back to the "Upload Document" tab (click the tab in the navigation bar)
    - The upload form is ready for a new document with a fresh state
    - The auto-analyze setting persists from your previous choice
@@ -225,9 +245,12 @@ The app features **AI-powered document analysis** using Google's Gemini API to a
 
 ### Tips for Best Organization
 
+- **One-Time Setup**: Configure your Gemini API key once in the Setup tab - it's stored securely in Redis and persists across sessions
+- **Get a Free API Key**: Visit https://aistudio.google.com/app/apikey to get a free Gemini API key (15 requests/minute, 1,500 requests/day free tier)
 - **AI Analysis**: Enable auto-analyze for automatic description generation, or disable it if you prefer manual entry
 - **Re-Analyze Feature**: If the AI's first analysis isn't perfect, click "Re-analyze" to try again
 - **Edit AI Content**: Always review and edit AI-generated descriptions and notes before saving
+- **Caching Benefits**: Duplicate uploads use cached analysis results (free, instant)
 - **Desktop Recommended**: File uploads work best on desktop browsers due to Reddit app limitations on mobile
 - **Mobile Warning**: A yellow banner on mobile devices alerts users to potential upload issues
 - **Mobile-Optimized UI**: The upload area says "Tap to select a file" for better mobile experience with enhanced file picker handling
@@ -276,16 +299,19 @@ The app features **AI-powered document analysis** using Google's Gemini API to a
 ## Features
 
 - **Modern Dark UI**: Beautiful gradient dark theme (gray-900 to gray-800) with glassmorphism effects (backdrop blur, semi-transparent panels)
-- **AI-Powered Document Analysis**: Automatic extraction of key information using Google's Gemini 1.5 Flash API
-- **Smart Description Generation**: AI suggests concise descriptions based on document content
-- **Automatic Summarization**: Extracts amounts, dates, and key details from documents
+- **Easy API Key Setup**: Configure your Gemini API key through the Setup tab - stored securely in Redis per-post
+- **AI-Powered Document Analysis**: Automatic extraction of key information using Google's Gemini 2.5 Flash API
+- **Smart Description Generation**: AI suggests concise descriptions (max 80 chars) based on document content
+- **Automatic Summarization**: Extracts amounts, dates, and key details (max 400 chars) from documents
 - **Re-Analyze Feature**: Don't like the AI's analysis? Click "Re-analyze" to regenerate it
 - **Auto-Analyze Toggle**: Enable or disable automatic AI analysis when uploading
 - **AI-Generated Indicators**: ✨ sparkle icons show which fields were generated by AI
-- **Intelligent Caching**: Analysis results cached for 7 days for faster performance
-- **Rate Limiting**: Fair usage with 100 analysis requests per user per day
+- **Intelligent Caching**: Analysis results cached for 7 days using MD5 hash-based cache keys
+- **Rate Limiting**: Fair usage with 100 analysis requests per user per day (resets at midnight UTC)
 - **Graceful Fallback**: If AI fails, provides generic descriptions so uploads always succeed
-- **Automatic Configuration**: API key retrieved from Redis on app initialization
+- **Per-Post Configuration**: Each Reddit post has its own API key configuration stored in Redis
+- **Retry Logic**: Automatic retry with exponential backoff for transient API failures
+- **Comprehensive Logging**: Structured JSON logs for monitoring, debugging, and performance analysis
 - **Mobile Upload Warning**: Yellow banner on mobile devices alerts users to potential file upload limitations in the Reddit app
 - **Enhanced File Picker**: Improved mobile browser compatibility with focus management and error handling
 - **Robust Error Messages**: Clear guidance when file picker issues occur, with browser/app recommendations
@@ -307,7 +333,7 @@ The app features **AI-powered document analysis** using Google's Gemini API to a
   - PDFs: Stored as base64 in Redis for reliable access
 - **Persistent Storage**: All documents saved in Redis and persist across sessions (up to 20 per post)
 - **Simple Deletion**: Remove documents from Redis with confirmation dialog
-- **Two-Tab Interface**: Separate views for uploading new documents and browsing your collection with blue highlight indicator
+- **Three-Tab Interface**: Setup tab for API key configuration, Upload tab for new documents, and My Documents tab for browsing your collection
 - **Mobile-Friendly**: Responsive design works seamlessly on desktop and mobile with touch-optimized interactions
 - **Reddit Integration**: Fully integrated with Reddit's authentication and data storage
 - **User Context**: Displays your Reddit username in the header and maintains per-post document collections

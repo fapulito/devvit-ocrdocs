@@ -119,6 +119,35 @@ router.post('/internal/on-app-install', async (_req, res): Promise<void> => {
   }
 });
 
+// API endpoint for API key configuration
+router.post('/api/configure-key', async (req, res): Promise<void> => {
+  try {
+    const { apiKey } = req.body;
+
+    if (!apiKey) {
+      res.status(400).json({ status: 'error', message: 'API key is required' });
+      return;
+    }
+
+    await redis.set('config:gemini_api_key', apiKey);
+    console.log(
+      '[API] Gemini API key configured successfully for subreddit:',
+      context.subredditName
+    );
+
+    res.json({
+      status: 'success',
+      message: 'API key configured successfully',
+    });
+  } catch (error) {
+    console.error('[API] Error configuring API key:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Failed to configure API key',
+    });
+  }
+});
+
 router.post('/internal/menu/post-create', async (_req, res): Promise<void> => {
   try {
     const post = await createPost();
@@ -477,7 +506,7 @@ router.post('/api/documents/delete', async (req, res): Promise<void> => {
 // To use: Set GEMINI_API_KEY environment variable, then call this endpoint
 router.post('/api/temp-set-key', async (_req, res): Promise<void> => {
   const apiKey = process.env.GEMINI_API_KEY;
-  
+
   if (!apiKey) {
     res.status(400).json({ success: false, message: 'GEMINI_API_KEY not set in environment' });
     return;
@@ -609,9 +638,10 @@ router.post<
       console.log(`[Analysis] Analysis completed for file: ${fileName}`);
 
       // Only cache successful analyses (not fallback responses)
-      const isFallback = analysis.summary.includes('Auto-analysis unavailable') || 
-                         analysis.summary.includes('Please add details manually');
-      
+      const isFallback =
+        analysis.summary.includes('Auto-analysis unavailable') ||
+        analysis.summary.includes('Please add details manually');
+
       if (!isFallback) {
         // Store analysis results in Redis with 7-day TTL
         const CACHE_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days in seconds
